@@ -27,11 +27,13 @@ func run() error {
 		return err
 	}
 
-	s := parser(m, 0, false, false)
+	s := parser(m, 0, false, true)
 
 	fmt.Println(s)
 	return nil
 }
+
+var increment int
 
 func parser(i interface{}, nest int, isSameLine bool, isLastElement bool) string {
 	switch i.(type) {
@@ -46,17 +48,22 @@ func parser(i interface{}, nest int, isSameLine bool, isLastElement bool) string
 	case []interface{}:
 		txt := fmt.Sprintf("%s%s\n", getSpaces(nest, isSameLine), "[")
 		s := i.([]interface{})
-		for _, v := range s {
-			txt += parser(v, nest+1, false, false)
+		length := len(s)
+		for idx, v := range s {
+			idx++
+			txt += parser(v, nest+1, false, checkLast(idx, length))
 		}
 		txt += fmt.Sprintf("%s%s%s\n", getSpaces(nest, false), "]", getComma(isLastElement))
 		return txt
 	case map[string]interface{}:
 		txt := fmt.Sprintf("%s%s\n", getSpaces(nest, isSameLine), "{")
 		m := i.(map[string]interface{})
+		length := len(m)
+		var idx int
 		for k, v := range m {
+			idx++
 			txt += fmt.Sprintf("%s%s:", getSpaces(nest+1, false), k)
-			txt += parser(v, nest+1, true, false)
+			txt += parser(v, nest+1, true, checkLast(idx, length))
 		}
 		txt += fmt.Sprintf("%s%s%s\n", getSpaces(nest, false), "}", getComma(isLastElement))
 		return txt
@@ -84,4 +91,8 @@ func getComma(isLastElement bool) string {
 		return ""
 	}
 	return ","
+}
+
+func checkLast(idx, length int) bool {
+	return idx == length
 }
