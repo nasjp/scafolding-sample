@@ -69,32 +69,32 @@ func part2() error {
 
 var indentStr = "  "
 
-func parser(i interface{}, indent int) string {
+func parser(i interface{}, nest int) string {
 	switch i.(type) {
 	case string:
-		return fmt.Sprintf("%s\"%s\",\n", strings.Repeat(indentStr, indent), i.(string))
+		return fmt.Sprintf("%s\"%s\",\n", strings.Repeat(indentStr, nest), i.(string))
 	case float64:
-		return fmt.Sprintf("%s%s,\n", strings.Repeat(indentStr, indent), numberPerser(i.(float64)))
+		return fmt.Sprintf("%s%s,\n", strings.Repeat(indentStr, nest), numberPerser(i.(float64)))
 	case bool:
-		return fmt.Sprintf("%s%t,\n", strings.Repeat(indentStr, indent), i.(bool))
+		return fmt.Sprintf("%s%t,\n", strings.Repeat(indentStr, nest), i.(bool))
 	case nil:
-		return fmt.Sprintf("%s%s,\n", strings.Repeat(indentStr, indent), "<nil>")
+		return fmt.Sprintf("%s%s,\n", strings.Repeat(indentStr, nest), "<nil>")
 	case []interface{}:
 		s := i.([]interface{})
-		txt := fmt.Sprintf("%s%s\n", strings.Repeat(indentStr, indent), "[")
+		txt := fmt.Sprintf("%s%s\n", strings.Repeat(indentStr, nest), "[")
 		for _, v := range s {
-			txt += parser(v, indent+1)
+			txt += parser(v, nest+1)
 		}
-		txt += fmt.Sprintf("%s%s,\n", strings.Repeat(indentStr, indent), "]")
+		txt += fmt.Sprintf("%s%s,\n", strings.Repeat(indentStr, nest), "]")
 		return txt
 	case map[string]interface{}:
 		m := i.(map[string]interface{})
-		txt := fmt.Sprintf("%s%s\n", strings.Repeat(indentStr, indent), "{")
+		txt := fmt.Sprintf("%s%s\n", strings.Repeat(indentStr, nest), "{")
 		for k, v := range m {
-			txt += fmt.Sprintf("%s%s: ", strings.Repeat(indentStr, indent+1), k)
-			txt += parser(v, indent+1)
+			txt += fmt.Sprintf("%s%s: ", strings.Repeat(indentStr, nest+1), k)
+			txt += parser(v, nest+1)
 		}
-		txt += fmt.Sprintf("%s%s,\n", strings.Repeat(indentStr, indent), "}")
+		txt += fmt.Sprintf("%s%s,\n", strings.Repeat(indentStr, nest), "}")
 		return txt
 	}
 	return ""
@@ -106,3 +106,5 @@ func numberPerser(f float64) string {
 	}
 	return fmt.Sprintf("%f", f)
 }
+
+// func getSpace()
