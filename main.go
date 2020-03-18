@@ -27,15 +27,11 @@ func run() error {
 		return err
 	}
 
-	s := parser(m, 0, false, true)
-
-	fmt.Println(s)
+	fmt.Println(toJsonString(m, 0, false, true))
 	return nil
 }
 
-var increment int
-
-func parser(i interface{}, nest int, isSameLine bool, isLastElement bool) string {
+func toJsonString(i interface{}, nest int, isSameLine bool, isLastElement bool) string {
 	switch i.(type) {
 	case string:
 		return fmt.Sprintf("%s\"%s\"%s\n", getSpaces(nest, isSameLine), i.(string), getComma(isLastElement))
@@ -51,7 +47,7 @@ func parser(i interface{}, nest int, isSameLine bool, isLastElement bool) string
 		length := len(s)
 		for idx, v := range s {
 			idx++
-			txt += parser(v, nest+1, false, checkLast(idx, length))
+			txt += toJsonString(v, nest+1, false, checkLast(idx, length))
 		}
 		txt += fmt.Sprintf("%s%s%s\n", getSpaces(nest, false), "]", getComma(isLastElement))
 		return txt
@@ -63,7 +59,7 @@ func parser(i interface{}, nest int, isSameLine bool, isLastElement bool) string
 		for k, v := range m {
 			idx++
 			txt += fmt.Sprintf("%s%s:", getSpaces(nest+1, false), k)
-			txt += parser(v, nest+1, true, checkLast(idx, length))
+			txt += toJsonString(v, nest+1, true, checkLast(idx, length))
 		}
 		txt += fmt.Sprintf("%s%s%s\n", getSpaces(nest, false), "}", getComma(isLastElement))
 		return txt
