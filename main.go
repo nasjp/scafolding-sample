@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"go/format"
+	"go/parser"
+	"go/token"
 	"os"
+	"text/template"
 
 	"github.com/nasjp/scafolding-sample/genport"
 )
@@ -17,19 +22,44 @@ func main() {
 }
 
 func run() error {
-	// f, err := os.Open("sample.json")
-	f, err := os.Open("get_user.json")
+	jsonF, err := os.Open("get_user.json")
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer jsonF.Close()
 	m := map[string]interface{}{}
-	if err := json.NewDecoder(f).Decode(&m); err != nil {
+	if err := json.NewDecoder(jsonF).Decode(&m); err != nil {
 		return err
 	}
 
-	// fmt.Println(toJsonString(m, 0, false, true))
-	fmt.Printf("type Request%s ", m["name"])
-	fmt.Println(genport.MapToStruct(m["request"], 0))
+	str := fmt.Sprintf("type %s %s", m["name"].(string), genport.MapToStruct(m["request"], 0))
+
+	buf := bytes.NewBuffer([]byte{})
+
+	tmpl, err := template.ParseFiles("./examples/template.go")
+	if err != nil {
+		return err
+	}
+
+	if err := tmpl.Execute(buf, map[string]string{"response": str}); err != nil {
+		return err
+	}
+
+	fset := token.NewFileSet()
+	astF, err := parser.ParseFile(fset, "", buf, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+
+	goF, err := os.Create("examples/response.go")
+	if err != nil {
+		return err
+	}
+	defer goF.Close()
+
+	if err := format.Node(goF, fset, astF); err != nil {
+		return err
+	}
+
 	return nil
 }
